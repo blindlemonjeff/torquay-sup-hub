@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICF SUP Commentator Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-4">ICF SUP World Cup Dashboard</h1>
+
+        <!-- NEW: Weather and Tide Section -->
+        <section class="bg-blue-50 p-4 rounded-lg shadow mb-6 border border-blue-200">
+            <h2 class="text-lg font-semibold text-blue-800 mb-2">Conditions & Tides</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="font-medium">Weather:</p>
+                    <p id="weather-info" class="text-gray-700">Loading forecast...</p>
+                </div>
+                <div>
+                    <p class="font-medium">Tide Times:</p>
+                    <p id="tide-info" class="text-gray-700">Check official schedule</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Existing Dashboard Content Placeholder -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Race Schedule</h2>
+            <p>Content goes here...</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple logic for tide info integration can be added here
+        document.getElementById('weather-info').innerText = "Wind: 10kts NW | Temp: 18°C";
+    </script>
+</body>
+</html>
