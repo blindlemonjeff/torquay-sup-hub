@@ -3,38 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICF SUP Commentator Dashboard</title>
+    <title>ICF SUP World Cup Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold mb-4">ICF SUP World Cup Dashboard</h1>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-900 text-white p-4">
+        <div class="max-w-4xl mx-auto flex gap-4 overflow-x-auto">
+            <button onclick="showPage('schedule')" class="px-3 py-1 bg-blue-700 rounded">Schedule</button>
+            <button onclick="showPage('sprint')" class="px-3 py-1 bg-blue-700 rounded">Sprint Format</button>
+            <button onclick="showPage('tech')" class="px-3 py-1 bg-blue-700 rounded">Tech Format</button>
+        </div>
+    </nav>
 
-        <!-- NEW: Weather and Tide Section -->
+    <div class="max-w-4xl mx-auto p-4">
+        <!-- Weather/Tide Info (Always Visible) -->
         <section class="bg-blue-50 p-4 rounded-lg shadow mb-6 border border-blue-200">
-            <h2 class="text-lg font-semibold text-blue-800 mb-2">Conditions & Tides</h2>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <p class="font-medium">Weather:</p>
-                    <p id="weather-info" class="text-gray-700">Loading forecast...</p>
-                </div>
-                <div>
-                    <p class="font-medium">Tide Times:</p>
-                    <p id="tide-info" class="text-gray-700">Check official schedule</p>
-                </div>
-            </div>
+            <h2 class="text-sm font-semibold text-blue-800 uppercase">Conditions & Tides</h2>
+            <p id="weather-info" class="text-gray-700 text-sm">Wind: 10kts NW | Tide: Check Official Tables</p>
         </section>
 
-        <!-- Existing Dashboard Content Placeholder -->
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-bold mb-4">Race Schedule</h2>
-            <p>Content goes here...</p>
+        <!-- Pages -->
+        <div id="schedule" class="page active bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Competition Schedule</h2>
+            <table class="w-full text-sm">
+                <tr class="border-b"><td class="font-bold py-2">Friday 26th June</td><td>10:30 - ICF Sprint Heats</td></tr>
+                <tr class="border-b"><td class="py-2"></td><td>13:00 - ICF Semi-Finals</td></tr>
+                <tr class="border-b"><td class="py-2"></td><td>18:30 - ICF Finals</td></tr>
+            </table>
+        </div>
+
+        <div id="sprint" class="page bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Sprint Progression (ICF)</h2>
+            <ul class="text-sm space-y-2">
+                <li><strong>Sprint A (1-8):</strong> Warm up, Straight Final</li>
+                <li><strong>Sprint B (9-16):</strong> 2 Heats -> Semi -> Final</li>
+                <li><strong>Sprint C (17-24):</strong> 3 Heats -> 2 Semis -> 3 Finals</li>
+            </ul>
+        </div>
+
+        <div id="tech" class="page bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Tech Progression (ICF)</h2>
+            <ul class="text-sm space-y-2">
+                <li><strong>Tech A (1-12):</strong> Straight Final</li>
+                <li><strong>Tech B (13-24):</strong> 2 Heats -> Final</li>
+                <li><strong>Tech C (25-36):</strong> 3 Heats -> 2 Semis -> Final</li>
+            </ul>
         </div>
     </div>
 
     <script>
-        // Simple logic for tide info integration can be added here
-        document.getElementById('weather-info').innerText = "Wind: 10kts NW | Temp: 18°C";
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
     </script>
 </body>
 </html>
