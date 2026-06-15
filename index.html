@@ -5,36 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICF SUP Commentator Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .page { display: none; }
+        .page.active { display: block; }
+        body.dark-mode { background-color: #000; color: #fff; }
+        body.dark-mode .bg-white { background-color: #1f2937; color: #fff; }
+        body.dark-mode .bg-blue-50 { background-color: #1e3a8a; color: #e5e7eb; }
+        .pinned-athlete { border: 2px solid #fbbf24; }
+    </style>
 </head>
-<body class="bg-gray-100 p-4">
+<body class="bg-gray-100 p-4 transition-colors duration-300">
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold mb-4">ICF SUP World Cup Dashboard</h1>
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-xl font-bold">SUP Commentator Hub</h1>
+            <button onclick="toggleTheme()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Toggle Theme</button>
+        </header>
 
-        <!-- NEW: Weather and Tide Section -->
+        <!-- Weather and Tide Section -->
         <section class="bg-blue-50 p-4 rounded-lg shadow mb-6 border border-blue-200">
-            <h2 class="text-lg font-semibold text-blue-800 mb-2">Conditions & Tides</h2>
+            <h2 class="text-sm font-semibold text-blue-800 uppercase mb-2">Conditions & Tides</h2>
             <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <p class="font-medium">Weather:</p>
-                    <p id="weather-info" class="text-gray-700">Loading forecast...</p>
-                </div>
-                <div>
-                    <p class="font-medium">Tide Times:</p>
-                    <p id="tide-info" class="text-gray-700">Check official schedule</p>
-                </div>
+                <div><p class="font-medium">Weather:</p><p id="weather-info">Wind: 10kts NW | Temp: 18°C</p></div>
+                <div><p class="font-medium">Tide Times:</p><p id="tide-info">03:00 / 15:30</p></div>
             </div>
         </section>
 
-        <!-- Existing Dashboard Content Placeholder -->
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-bold mb-4">Race Schedule</h2>
-            <p>Content goes here...</p>
+        <!-- Navigation -->
+        <nav class="flex gap-2 mb-6 overflow-x-auto pb-2">
+            <button onclick="showPage('schedule')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Schedule</button>
+            <button onclick="showPage('athletes')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Athletes</button>
+            <button onclick="showPage('notes')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Scratchpad</button>
+            <button onclick="showPage('trivia')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Location</button>
+        </nav>
+
+        <!-- Schedule Page -->
+        <div id="schedule" class="page active bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4">Daily Schedule (26 June 2026)</h2>
+            <ul class="text-sm space-y-2 list-disc pl-5">
+                <li>10:30 - ICF Sprint Heats</li>
+                <li>13:00 - ICF Semi-Finals</li>
+                <li>18:30 - ICF Finals</li>
+            </ul>
+        </div>
+
+        <!-- Athletes Page -->
+        <div id="athletes" class="page bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4">Competitor Index</h2>
+            <input type="text" id="search" placeholder="Search athletes..." class="w-full p-2 border mb-4 text-sm rounded" onkeyup="filterAthletes()">
+            <ul id="athlete-list" class="text-sm space-y-2">
+                <li onclick="pinAthlete(this)" class="cursor-pointer p-2 hover:bg-gray-100 rounded">Michael Booth (AUS)</li>
+                <li onclick="pinAthlete(this)" class="cursor-pointer p-2 hover:bg-gray-100 rounded">Esperanza Barreras (ESP)</li>
+                <li onclick="pinAthlete(this)" class="cursor-pointer p-2 hover:bg-gray-100 rounded">Noic Garioud (FRA)</li>
+            </ul>
+        </div>
+
+        <!-- Scratchpad Page -->
+        <div id="notes" class="page bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4">Live Scratchpad</h2>
+            <textarea id="scratchpad" class="w-full h-40 border p-2 text-sm rounded" placeholder="Draft notes, pronunciations, and run-times here..."></textarea>
+        </div>
+
+        <!-- Trivia Page -->
+        <div id="trivia" class="page bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4">Location Talking Points</h2>
+            <ul class="text-sm space-y-2 list-disc pl-5">
+                <li>UNESCO Global Geopark: Torbay's unique geology.</li>
+                <li>Agatha Christie: Born in Torquay, "Queen of Crime".</li>
+                <li>Microclimate: The "English Riviera" effect.</li>
+            </ul>
         </div>
     </div>
 
     <script>
-        // Simple logic for tide info integration can be added here
-        document.getElementById('weather-info').innerText = "Wind: 10kts NW | Temp: 18°C";
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+        function filterAthletes() {
+            let filter = document.getElementById('search').value.toLowerCase();
+            document.querySelectorAll('#athlete-list li').forEach(item => {
+                item.style.display = item.innerText.toLowerCase().includes(filter) ? "" : "none";
+            });
+        }
+        function pinAthlete(el) { el.classList.toggle('pinned-athlete'); }
+        // Load/Save scratchpad
+        const pad = document.getElementById('scratchpad');
+        pad.value = localStorage.getItem('scratchpad') || '';
+        pad.oninput = () => localStorage.setItem('scratchpad', pad.value);
     </script>
 </body>
 </html>
