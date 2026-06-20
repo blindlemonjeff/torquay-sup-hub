@@ -72,12 +72,18 @@
 
         <!-- Schedule Page -->
         <div id="schedule" class="page active bg-white p-6 rounded-lg shadow border dark:border-gray-700">
-            <h2 class="text-lg font-bold mb-4 border-b dark:border-gray-600 pb-2">Daily Schedule (26 June 2026)</h2>
-            <ul class="text-sm space-y-3 list-disc pl-5">
-                <li><strong class="text-blue-600 dark:text-blue-400">10:30</strong> - ICF Sprint Heats</li>
-                <li><strong class="text-blue-600 dark:text-blue-400">13:00</strong> - ICF Semi-Finals</li>
-                <li><strong class="text-blue-600 dark:text-blue-400">18:30</strong> - ICF Finals</li>
-            </ul>
+            <div class="flex justify-between items-center mb-4 border-b dark:border-gray-600 pb-2">
+                <h2 class="text-lg font-bold">Event Schedule</h2>
+                <select id="schedule-filter" onchange="renderSchedule()" class="p-1 border rounded text-sm dark:bg-gray-800 dark:border-gray-600">
+                    <option value="All">All Events</option>
+                    <option value="ICF">ICF Races</option>
+                    <option value="SUPERfestival">SUPERfestival Races</option>
+                    <option value="Other">Other / Ceremonies</option>
+                </select>
+            </div>
+            <div id="schedule-list" class="space-y-6">
+                <!-- Injected via JS -->
+            </div>
         </div>
 
         <!-- Athletes Page -->
@@ -130,7 +136,7 @@
         <div id="talk-points" class="page bg-white p-6 rounded-lg shadow border dark:border-gray-700">
             <div class="flex justify-between items-center mb-4 border-b dark:border-gray-600 pb-2">
                 <h2 class="text-lg font-bold">Talk Points</h2>
-                <select id="category-filter" onchange="renderTalkPoints()" class="p-1 border rounded text-sm">
+                <select id="category-filter" onchange="renderTalkPoints()" class="p-1 border rounded text-sm dark:bg-gray-800 dark:border-gray-600">
                     <option value="All">All Categories</option>
                     <option value="Local">Local</option>
                     <option value="Sponsors">Sponsors</option>
@@ -145,7 +151,7 @@
         <!-- Scratchpad Page -->
         <div id="notes" class="page bg-white p-6 rounded-lg shadow border dark:border-gray-700">
             <h2 class="text-lg font-bold mb-4 border-b dark:border-gray-600 pb-2">Live Scratchpad</h2>
-            <textarea id="scratchpad" class="w-full h-40 border p-3 text-sm rounded shadow-inner" placeholder="Draft notes, pronunciations, and run-times here..."></textarea>
+            <textarea id="scratchpad" class="w-full h-40 border p-3 text-sm rounded shadow-inner dark:bg-gray-800 dark:border-gray-600" placeholder="Draft notes, pronunciations, and run-times here..."></textarea>
         </div>
 
         <!-- Admin Page -->
@@ -280,6 +286,24 @@
         updateClock();
 
         // --- Data States ---
+        const scheduleData = [
+            { day: "Wednesday 24th June", time: "15:00-18:00", title: "Training Open", category: "Other" },
+            { day: "Thursday 25th June", time: "15:00-15:30", title: "Opening Ceremony", category: "Other" },
+            { day: "Thursday 25th June", time: "18:00-20:00", title: "Training Open", category: "Other" },
+            { day: "Friday 26th June", time: "10:30-12:00", title: "ICF Sprint Heats", category: "ICF" },
+            { day: "Friday 26th June", time: "13:00-14:00", title: "ICF Sprint semi-finals & Warm-up Races", category: "ICF" },
+            { day: "Friday 26th June", time: "18:30-20:00", title: "ICF Sprint Finals", category: "ICF" },
+            { day: "Friday 26th June", time: "20:15-20:45", title: "Medal Ceremonies", category: "Other" },
+            { day: "Saturday 27th June", time: "09:30-12:00", title: "ICF Tech Heats", category: "ICF" },
+            { day: "Saturday 27th June", time: "12:20-15:00", title: "Festival Sprint Races", category: "SUPERfestival" },
+            { day: "Saturday 27th June", time: "15:15-17:00", title: "Festival Tech Races", category: "SUPERfestival" },
+            { day: "Saturday 27th June", time: "17:00-19:30", title: "ICF Tech Finals", category: "ICF" },
+            { day: "Saturday 27th June", time: "20:00-20:45", title: "Medal Ceremonies", category: "Other" },
+            { day: "Sunday 28th June", time: "12:30-13:30", title: "Festival Distance & ICF Junior Races", category: "Mixed" },
+            { day: "Sunday 28th June", time: "13:30-15:30", title: "ICF Distance Races", category: "ICF" },
+            { day: "Sunday 28th June", time: "16:00-16:45", title: "Medal & Closing Ceremonies", category: "Other" }
+        ];
+
         let athletes = [];
 
         let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points')) || [
@@ -335,6 +359,7 @@
         // --- Initialization ---
         document.addEventListener("DOMContentLoaded", () => {
             initAthletesData();
+            renderSchedule();
             renderTalkPoints();
             renderTides();
             calculateNextTide();
@@ -407,6 +432,52 @@
 
         function toggleTheme() { 
             document.body.classList.toggle('dark-mode'); 
+        }
+
+        // --- Schedule Rendering & Filtering ---
+        function renderSchedule() {
+            const filter = document.getElementById('schedule-filter').value;
+            const list = document.getElementById('schedule-list');
+            list.innerHTML = '';
+
+            const grouped = {};
+            scheduleData.forEach(item => {
+                let matches = false;
+                if (filter === "All") matches = true;
+                else if (filter === "ICF" && (item.category === "ICF" || item.category === "Mixed")) matches = true;
+                else if (filter === "SUPERfestival" && (item.category === "SUPERfestival" || item.category === "Mixed")) matches = true;
+                else if (filter === "Other" && item.category === "Other") matches = true;
+
+                if (matches) {
+                    if (!grouped[item.day]) grouped[item.day] = [];
+                    grouped[item.day].push(item);
+                }
+            });
+
+            if (Object.keys(grouped).length === 0) {
+                list.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 p-4">No events found for this filter.</p>';
+                return;
+            }
+
+            for (const [day, events] of Object.entries(grouped)) {
+                let dayHtml = `<div class="mb-4">
+                    <h3 class="font-bold text-blue-800 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded mb-2 border dark:border-blue-800">${day}</h3>
+                    <ul class="text-sm space-y-2 pl-2">`;
+                
+                events.forEach(ev => {
+                    let badge = '';
+                    if (ev.category === 'ICF' || ev.category === 'Mixed') badge += `<span class="ml-2 text-[10px] font-bold tracking-wider bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200 px-1.5 py-0.5 rounded border border-red-200 dark:border-red-800 shadow-sm">ICF</span>`;
+                    if (ev.category === 'SUPERfestival' || ev.category === 'Mixed') badge += `<span class="ml-2 text-[10px] font-bold tracking-wider bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800 shadow-sm">FESTIVAL</span>`;
+                    if (ev.category === 'Other') badge += `<span class="ml-2 text-[10px] font-bold tracking-wider bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 px-1.5 py-0.5 rounded border border-gray-300 dark:border-gray-600 shadow-sm">INFO</span>`;
+
+                    dayHtml += `<li class="flex flex-col sm:flex-row sm:items-center border-l-2 border-blue-300 dark:border-blue-600 pl-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <span class="w-32 font-mono font-bold text-blue-600 dark:text-blue-400">${ev.time}</span>
+                        <span class="flex-1 text-gray-800 dark:text-gray-200 mt-1 sm:mt-0 font-medium">${ev.title} ${badge}</span>
+                    </li>`;
+                });
+                dayHtml += `</ul></div>`;
+                list.innerHTML += dayHtml;
+            }
         }
 
         // --- Athletes (Viewer & Filters) ---
