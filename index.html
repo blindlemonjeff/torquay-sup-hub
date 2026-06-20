@@ -93,7 +93,7 @@
                     <option value="">All Genders</option><option value="Male">Male</option><option value="Female">Female</option>
                 </select>
                 <select id="filter-class" onchange="filterAthletes()" class="p-2 border rounded text-xs">
-                    <option value="">All Classes</option><option value="Open">Open</option><option value="Junior">Junior</option><option value="O40s">O40s</option><option value="O50s">O50s</option>
+                    <option value="">All Classes</option><option value="Open">Open</option><option value="Junior">Junior</option><option value="O40s">O40s</option><option value="O50s">O50s</option><option value="O60s">O60s</option>
                 </select>
                 <select id="filter-type" onchange="filterAthletes()" class="p-2 border rounded text-xs">
                     <option value="">All Race Types</option><option value="Sprint">Sprint</option><option value="Distance">Distance</option><option value="Technical">Technical</option>
@@ -348,33 +348,51 @@
         // --- JSON Synchronization & Loading ---
         async function initAthletesData() {
             const localData = localStorage.getItem('icf_athletes');
-            if (localData && JSON.parse(localData).length > 0) {
-                // Load from browser memory if available
-                athletes = JSON.parse(localData);
+            let parsedData = localData ? JSON.parse(localData) : [];
+            
+            // Detect and wipe legacy data schema missing the 'class' attribute
+            if (parsedData.length > 0 && typeof parsedData[0].class === 'undefined') {
+                console.log("Legacy athletes data detected. Wiping memory for schema update.");
+                parsedData = [];
+                localStorage.removeItem('icf_athletes');
+            }
+
+            if (parsedData.length > 0) {
+                athletes = parsedData;
                 renderAthletes();
                 renderAdminAthletes();
             } else {
-                // If local storage is empty, fetch JSON automatically
                 await syncJSON(false);
             }
         }
 
         async function syncJSON(showAlert = true) {
             try {
-                // Fetches athletes.json from the same directory as this HTML file
                 const response = await fetch('athletes.json');
                 if (!response.ok) throw new Error('Network response was not ok');
                 
-                const data = await response.json();
-                athletes = data;
+                athletes = await response.json();
                 saveAthletesData();
                 renderAthletes();
                 renderAdminAthletes();
                 
                 if (showAlert) alert("Racers synchronized successfully from server!");
             } catch (error) {
-                console.error("Failed to fetch athletes.json:", error);
-                if (showAlert) alert("Could not pull data. Ensure 'athletes.json' exists on the server.");
+                console.error("Failed to fetch athletes.json. Loading fallback default data.", error);
+                
+                // Fallback default data injected directly to ensure filters always work
+                athletes = [
+                    { id: 1, name: "Michael Booth", country: "AUS", event: "ICF", gender: "Male", class: "Open", raceTypes: "Sprint, Distance", notes: "Dominant long-distance paddler. Renowned for strategic pacing.", isPinned: false },
+                    { id: 2, name: "Esperanza Barreras", country: "ESP", event: "ICF", gender: "Female", class: "Open", raceTypes: "Technical, Distance", notes: "Technical masterclass. Incredibly fast buoy turns.", isPinned: false },
+                    { id: 3, name: "Noic Garioud", country: "FRA", event: "SUPERfestival", gender: "Male", class: "Open", raceTypes: "Sprint", notes: "Explosive sprinter. Famous for high cadence starts.", isPinned: false },
+                    { id: 4, name: "Cecilia Pampinella", country: "ITA", event: "ICF", gender: "Female", class: "Junior", raceTypes: "Technical", notes: "19-year-old rising star challenging elite podiums.", isPinned: false }
+                ];
+                
+                saveAthletesData();
+                renderAthletes();
+                renderAdminAthletes();
+                
+                if (showAlert) alert("Could not pull JSON. Loaded default fallback data instead.");
             }
         }
 
@@ -398,7 +416,7 @@
             athletes.forEach(a => {
                 const pinClass = a.isPinned ? 'pinned-athlete shadow-sm' : 'border border-transparent dark:border-gray-700';
                 
-                // Constructing badges safely
+                // Constructing badges safely fallback to 'N/A' to prevent logic breaks
                 const badges = `
                     <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.event || 'N/A'}</span>
                     <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.gender || 'N/A'}</span>
@@ -543,14 +561,12 @@
             };
 
             if(idVal) {
-                // Editing existing
                 const id = parseInt(idVal);
                 const index = athletes.findIndex(a => a.id === id);
                 if(index > -1) {
                     athletes[index] = { ...athletes[index], ...newAthleteData };
                 }
             } else {
-                // Adding new
                 const newId = athletes.length > 0 ? Math.max(...athletes.map(a => a.id)) + 1 : 1;
                 athletes.push({ id: newId, isPinned: false, ...newAthleteData });
             }
@@ -624,19 +640,18 @@
                 let startId = athletes.length > 0 ? Math.max(...athletes.map(a => a.id)) + 1 : 1;
 
                 rows.forEach((row, index) => {
-                    if (index === 0 || !row.trim()) return; // skip header/empty
+                    if (index === 0 || !row.trim()) return; 
                     
                     const cols = parseCSVLine(row);
                     if (cols.length >= 3) {
                         newAthletes.push({
                             id: startId++,
-                            name: cols[0],
-                            country: cols[1],
-                            category: cols[2],
-                            event: 'ICF', // defaults for CSV imports
+                            name: cols[0] || 'Unknown',
+                            country: cols[1] || 'TBD',
+                            event: 'ICF', 
                             gender: 'Male',
-                            class: 'Open',
-                            raceTypes: '',
+                            class: cols[2] || 'Open',
+                            raceTypes: 'Sprint',
                             notes: '',
                             isPinned: false
                         });
