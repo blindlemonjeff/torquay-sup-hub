@@ -88,7 +88,13 @@
 
         <!-- Athletes Page -->
         <div id="athletes" class="page bg-white p-6 rounded-lg shadow border dark:border-gray-700">
-            <h2 class="text-lg font-bold mb-4 border-b dark:border-gray-600 pb-2">Competitor Index</h2>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b dark:border-gray-600 pb-2 gap-3">
+                <h2 class="text-lg font-bold">Competitor Index</h2>
+                <div class="flex gap-2">
+                    <button onclick="sortAthletes('forename')" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm">Sort Forename</button>
+                    <button onclick="sortAthletes('surname')" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm">Sort Surname</button>
+                </div>
+            </div>
             
             <!-- Filters -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4 bg-gray-50 dark:bg-gray-800 p-3 rounded border dark:border-gray-700">
@@ -370,20 +376,24 @@
             pad.oninput = () => localStorage.setItem('scratchpad', pad.value);
         });
 
-        // --- JSON Synchronization & Loading ---
+        // --- JSON Synchronization, Loading & Patcher ---
         async function initAthletesData() {
             const localData = localStorage.getItem('icf_athletes');
             let parsedData = localData ? JSON.parse(localData) : [];
             
-            // Detect and wipe legacy data schema missing the 'class' attribute
-            if (parsedData.length > 0 && typeof parsedData[0].class === 'undefined') {
-                console.log("Legacy athletes data detected. Wiping memory for schema update.");
-                parsedData = [];
-                localStorage.removeItem('icf_athletes');
-            }
-
+            // Auto-Patcher: Fix any corrupted or old local memory that lacks the new fields
             if (parsedData.length > 0) {
+                parsedData = parsedData.map(a => ({
+                    ...a,
+                    event: a.event || 'ICF',
+                    gender: a.gender || 'Unspecified',
+                    class: a.class || a.category || 'Open', // Maps old 'category' safely to 'class'
+                    raceTypes: a.raceTypes || 'Sprint',
+                    notes: a.notes || ''
+                }));
+                
                 athletes = parsedData;
+                saveAthletesData(); // Save the patched versions back to memory
                 renderAthletes();
                 renderAdminAthletes();
             } else {
@@ -397,6 +407,17 @@
                 if (!response.ok) throw new Error('Network response was not ok');
                 
                 athletes = await response.json();
+                
+                // Auto-patch fetched JSON just in case it's missing fields
+                athletes = athletes.map(a => ({
+                    ...a,
+                    event: a.event || 'ICF',
+                    gender: a.gender || 'Unspecified',
+                    class: a.class || a.category || 'Open',
+                    raceTypes: a.raceTypes || 'Sprint',
+                    notes: a.notes || ''
+                }));
+                
                 saveAthletesData();
                 renderAthletes();
                 renderAdminAthletes();
@@ -480,27 +501,27 @@
             }
         }
 
-        // --- Athletes (Viewer & Filters) ---
+        // --- Athletes (Viewer, Filters, & Sorting) ---
         function renderAthletes() {
             const list = document.getElementById('athlete-list');
             list.innerHTML = '';
             athletes.forEach(a => {
                 const pinClass = a.isPinned ? 'pinned-athlete shadow-sm' : 'border border-transparent dark:border-gray-700';
                 
-                // Constructing badges safely fallback to 'N/A' to prevent logic breaks
+                // Badges with mapped attributes
                 const badges = `
-                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.event || 'N/A'}</span>
-                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.gender || 'N/A'}</span>
-                    <span class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-1.5 py-0.5 rounded">${a.class || 'N/A'}</span>
-                    <span class="text-gray-500 text-[10px] uppercase ml-1">${a.raceTypes || ''}</span>
+                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.event}</span>
+                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.gender}</span>
+                    <span class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-1.5 py-0.5 rounded">${a.class}</span>
+                    <span class="text-gray-500 text-[10px] uppercase ml-1">${a.raceTypes}</span>
                 `;
 
                 list.innerHTML += `
                     <li class="p-3 rounded bg-white dark:bg-gray-800 shadow-sm flex flex-col gap-2 ${pinClass}" 
                         data-search="${(a.name + ' ' + a.country).toLowerCase()}" 
-                        data-event="${a.event || ''}" 
-                        data-gender="${a.gender || ''}" 
-                        data-class="${a.class || ''}" 
+                        data-event="${a.event}" 
+                        data-gender="${a.gender}" 
+                        data-class="${a.class}" 
                         data-types="${(a.raceTypes || '').toLowerCase()}">
                         
                         <div class="flex justify-between items-start">
@@ -560,6 +581,20 @@
             });
         }
 
+        function sortAthletes(by) {
+            if (by === 'forename') {
+                athletes.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (by === 'surname') {
+                athletes.sort((a, b) => {
+                    const aLast = a.name.split(' ').pop();
+                    const bLast = b.name.split(' ').pop();
+                    return aLast.localeCompare(bLast);
+                });
+            }
+            saveAthletesData();
+            renderAthletes();
+        }
+
         function togglePin(id) {
             const index = athletes.findIndex(a => a.id === id);
             if(index > -1) {
@@ -586,15 +621,7 @@
         }
 
         function sortAdminAthletes(by) {
-            if (by === 'forename') {
-                athletes.sort((a, b) => a.name.localeCompare(b.name));
-            } else if (by === 'surname') {
-                athletes.sort((a, b) => {
-                    const aLast = a.name.split(' ').pop();
-                    const bLast = b.name.split(' ').pop();
-                    return aLast.localeCompare(bLast);
-                });
-            }
+            sortAthletes(by); // Reuse the same sorting logic
             renderAdminAthletes();
         }
 
