@@ -1,98 +1,305 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICF SUP Commentator Dashboard</title>
+    <title>ICF SUP World Cup Commentator Hub</title>
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { brand: '#0284c7' } } }
+        }
+    </script>
     <style>
-        .page { display: none; }
-        .page.active { display: block; }
-        body.dark-mode { background-color: #000; color: #fff; }
-        body.dark-mode .bg-white { background-color: #1f2937; color: #fff; }
-        body.dark-mode .bg-blue-50 { background-color: #1e3a8a; color: #e5e7eb; }
-        .pinned-athlete { border: 2px solid #fbbf24; }
+        /* Hide pages by default */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* Smooth transitions */
+        body { transition: background-color 0.3s, color 0.3s; }
+        /* Hide scrollbar for nav but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-gray-100 p-4 transition-colors duration-300">
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold">SUP Commentator Hub</h1>
-            <button onclick="toggleTheme()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Toggle Theme</button>
-        </header>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-slate-100 min-h-screen pb-10">
 
-        <!-- Weather and Tide Section -->
-        <section class="bg-blue-50 p-4 rounded-lg shadow mb-6 border border-blue-200">
-            <h2 class="text-sm font-semibold text-blue-800 uppercase mb-2">Conditions & Tides</h2>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div><p class="font-medium">Weather:</p><p id="weather-info">Wind: 10kts NW | Temp: 18°C</p></div>
-                <div><p class="font-medium">Tide Times:</p><p id="tide-info">03:00 / 15:30</p></div>
+    <!-- Top Navigation Bar & Header -->
+    <div class="sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-md border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-microphone-lines text-brand text-xl"></i>
+                <h1 class="text-lg font-black tracking-tight uppercase">SUP Comm Hub</h1>
+            </div>
+            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-md text-sm font-bold flex items-center gap-2 transition">
+                <i class="fa-solid fa-circle-half-stroke"></i> Contrast
+            </button>
+        </div>
+
+        <!-- Quick-Pin Bar (Persistent) -->
+        <div id="pinned-bar" class="hidden bg-amber-100 dark:bg-amber-900/40 border-b border-amber-200 dark:border-amber-800 px-4 py-2 text-sm overflow-x-auto no-scrollbar">
+            <div class="max-w-4xl mx-auto flex items-center gap-3 whitespace-nowrap" id="pinned-list">
+                <span class="font-bold text-amber-700 dark:text-amber-500 uppercase text-xs tracking-wider"><i class="fa-solid fa-star"></i> Pinned:</span>
+                <!-- Pinned athletes injected here -->
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <nav class="max-w-4xl mx-auto px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+            <button onclick="showTab('schedule')" id="btn-schedule" class="tab-btn active px-4 py-2 rounded-lg text-sm font-bold bg-brand text-white shadow">Schedule</button>
+            <button onclick="showTab('athletes')" id="btn-athletes" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Athletes</button>
+            <button onclick="showTab('notes')" id="btn-notes" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Scratchpad</button>
+            <button onclick="showTab('location')" id="btn-location" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Location</button>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+
+        <!-- Conditions Widget -->
+        <section class="bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700 rounded-xl p-4 mb-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h2 class="text-xs font-black text-brand uppercase tracking-wider mb-1"><i class="fa-solid fa-cloud-sun"></i> Live Conditions</h2>
+                <p class="text-sm font-medium">Torre Abbey Sands | Wind: <span contenteditable="true" class="border-b border-dashed border-slate-400">10kts NW</span> | Temp: <span contenteditable="true" class="border-b border-dashed border-slate-400">18°C</span></p>
+            </div>
+            <div class="bg-white dark:bg-slate-700 px-3 py-2 rounded-lg shadow-inner text-sm border border-slate-200 dark:border-slate-600">
+                <p class="font-bold"><i class="fa-solid fa-water text-blue-500"></i> High Tides</p>
+                <p class="text-xs opacity-80" contenteditable="true">AM: 04:00 | PM: 16:30</p>
             </div>
         </section>
 
-        <!-- Navigation -->
-        <nav class="flex gap-2 mb-6 overflow-x-auto pb-2">
-            <button onclick="showPage('schedule')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Schedule</button>
-            <button onclick="showPage('athletes')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Athletes</button>
-            <button onclick="showPage('notes')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Scratchpad</button>
-            <button onclick="showPage('trivia')" class="px-3 py-1 bg-blue-900 text-white rounded text-sm">Location</button>
-        </nav>
-
-        <!-- Schedule Page -->
-        <div id="schedule" class="page active bg-white p-6 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-4">Daily Schedule (26 June 2026)</h2>
-            <ul class="text-sm space-y-2 list-disc pl-5">
-                <li>10:30 - ICF Sprint Heats</li>
-                <li>13:00 - ICF Semi-Finals</li>
-                <li>18:30 - ICF Finals</li>
-            </ul>
+        <!-- SCHEDULE TAB -->
+        <div id="schedule" class="tab-content active space-y-4">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Event Progression</h2>
+            <div id="schedule-container" class="space-y-4">
+                <!-- Injected via JS -->
+            </div>
         </div>
 
-        <!-- Athletes Page -->
-        <div id="athletes" class="page bg-white p-6 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-4">Competitor Index</h2>
-            <input type="text" id="search" placeholder="Search athletes..." class="w-full p-2 border mb-4 text-sm rounded" onkeyup="filterAthletes()">
-            <ul id="athlete-list" class="text-sm space-y-2">
-                <li onclick="pinAthlete(this)" class="cursor-pointer p-2 hover:bg-gray-100 rounded">Michael Booth (AUS)</li>
-                <li onclick="pinAthlete(this)" class="cursor-pointer p-2 hover:bg-gray-100 rounded">Esperanza Barreras (ESP)</li>
-                <li onclick="pinAthlete(this)" class="cursor-pointer p-2 hover:bg-gray-100 rounded">Noic Garioud (FRA)</li>
-            </ul>
+        <!-- ATHLETES TAB -->
+        <div id="athletes" class="tab-content">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2">Competitor Index</h2>
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                    <input type="text" id="search" placeholder="Search name, country, class..." onkeyup="filterAthletes()" class="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand outline-none">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="athlete-container">
+                <!-- Injected via JS -->
+            </div>
         </div>
 
-        <!-- Scratchpad Page -->
-        <div id="notes" class="page bg-white p-6 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-4">Live Scratchpad</h2>
-            <textarea id="scratchpad" class="w-full h-40 border p-2 text-sm rounded" placeholder="Draft notes, pronunciations, and run-times here..."></textarea>
+        <!-- SCRATCHPAD TAB -->
+        <div id="notes" class="tab-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2">Live Scratchpad</h2>
+                <button onclick="clearNotes()" class="text-xs text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash"></i> Clear</button>
+            </div>
+            <textarea id="scratchpad" class="w-full h-96 p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono text-sm focus:ring-2 focus:ring-brand outline-none resize-y" placeholder="Draft notes, penalties, run-times, and pronunciations here. Data auto-saves offline."></textarea>
+            <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-check-circle text-green-500"></i> Auto-saved to local browser storage.</p>
         </div>
 
-        <!-- Trivia Page -->
-        <div id="trivia" class="page bg-white p-6 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-4">Location Talking Points</h2>
-            <ul class="text-sm space-y-2 list-disc pl-5">
-                <li>UNESCO Global Geopark: Torbay's unique geology.</li>
-                <li>Agatha Christie: Born in Torquay, "Queen of Crime".</li>
-                <li>Microclimate: The "English Riviera" effect.</li>
-            </ul>
+        <!-- LOCATION / TRIVIA TAB -->
+        <div id="location" class="tab-content space-y-6">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Broadcast Talking Points</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Trivia Cards -->
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-brand">
+                    <h3 class="font-bold mb-2"><i class="fa-solid fa-mountain text-brand"></i> UNESCO Global Geopark</h3>
+                    <p class="text-sm opacity-90">Torbay has a distinctive 400-million-year-old geological heritage. This provides our race venue with beautiful red sandstone cliffs and deep sheltered waters.</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-brand">
+                    <h3 class="font-bold mb-2"><i class="fa-solid fa-temperature-half text-brand"></i> Dartmoor Microclimate</h3>
+                    <p class="text-sm opacity-90">The vast peaks of Dartmoor to the northwest block heavy Atlantic gusts, keeping Torre Abbey Sands relatively smooth compared to open channels.</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-brand">
+                    <h3 class="font-bold mb-2"><i class="fa-solid fa-book-open text-brand"></i> Birthplace of Agatha Christie</h3>
+                    <p class="text-sm opacity-90">Torquay is the birthplace of Agatha Christie. Her famous writing landmarks are located just yards behind the beach promenade.</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-amber-500">
+                    <h3 class="font-bold mb-2"><i class="fa-solid fa-bullhorn text-amber-500"></i> Sponsor Read: Paddle UK</h3>
+                    <p class="text-sm opacity-90 italic">"Promoting national water safety, the 'Go Paddling' campaign, and protecting beautiful blue spaces across the Southwest of England."</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-amber-500">
+                    <h3 class="font-bold mb-2"><i class="fa-solid fa-bullhorn text-amber-500"></i> Sponsor Read: Blackfish Paddles</h3>
+                    <p class="text-sm opacity-90 italic">"High-performance carbon paddles, designed in Canada. Check out their demo fleet at the Festival Seafront Village."</p>
+                </div>
+            </div>
         </div>
-    </div>
+
+    </main>
 
     <script>
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+        // --- DATA STRUCTURES ---
+        const scheduleData = [
+            { day: "Wed 25 June", events: [{ time: "15:00-18:00", title: "Training Open", details: "No beach restrictions. Tide monitoring." }] },
+            { day: "Thu 26 June", events: [{ time: "15:00-15:30", title: "Opening Ceremony", details: "Parade of Athletes." }, { time: "18:00-20:00", title: "Training Open", details: "Familiarisation." }] },
+            { day: "Fri 26 June", events: [{ time: "10:30-12:00", title: "ICF Sprint Heats", details: "Up to 16 races @ 5 min intervals." }, { time: "13:00-14:00", title: "ICF Sprint Semi-finals & Warm-ups", details: "Up to 12 races. Warm-ups for classes with straight finals." }, { time: "18:30-20:00", title: "ICF Sprint Finals", details: "Up to 18 races @ 5 min intervals." }, { time: "20:15-20:45", title: "Medal Ceremonies", details: "Main Stage." }] },
+            { day: "Sat 27 June", events: [{ time: "09:30-12:00", title: "ICF Tech Heats", details: "Up to 10 races @ 15 min intervals. M-shape course." }, { time: "12:15-15:00", title: "Festival Sprint Races", details: "Up to 32 races @ 5 min intervals." }, { time: "17:00-19:30", title: "ICF Tech Finals", details: "8 Finals, 2 Mass Starts." }] },
+            { day: "Sun 28 June", events: [{ time: "12:15-13:45", title: "Festival Distance & ICF Junior", details: "5 mass starts @ 3 min intervals. 4km route." }, { time: "14:00-15:15", title: "ICF Distance Races", details: "6 mass starts @ 3 min intervals. 8km route." }] }
+        ];
+
+        const athletesData = [
+            { id: 1, name: "Michael Booth", country: "AUS", flag: "🇦🇺", category: "Open Men", sponsor: "Starboard" },
+            { id: 2, name: "Esperanza Barreras", country: "ESP", flag: "🇪🇸", category: "Open Women", sponsor: "Starboard" },
+            { id: 3, name: "Noic Garioud", country: "FRA", flag: "🇫🇷", category: "Open Men", sponsor: "Sunova" },
+            { id: 4, name: "Fiona Wylde", country: "USA", flag: "🇺🇸", category: "Open Women", sponsor: "Werner" },
+            { id: 5, name: "Connor Baxter", country: "USA", flag: "🇺🇸", category: "Open Men", sponsor: "Starboard" },
+            { id: 6, name: "Cecilia Pampinella", country: "ITA", flag: "🇮🇹", category: "Junior Women", sponsor: "Lahui Kai" },
+            { id: 7, name: "Christian Taucher", country: "AUT", flag: "🇦🇹", category: "Masters 40+", sponsor: "Light Board" },
+            { id: 8, name: "Mariecarmen Rivera", country: "PUR", flag: "🇵🇷", category: "Open Women", sponsor: "Blackfish" }
+        ];
+
+        let pinnedAthletes = new Set();
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSchedule();
+            renderAthletes();
+            initScratchpad();
+            
+            // Check system preference for dark mode
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+        });
+
+        // --- NAVIGATION LOGIC ---
+        function showTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Reset all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand', 'text-white', 'shadow');
+                btn.classList.add('bg-slate-200', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-200');
+            });
+            
+            // Show selected content
+            document.getElementById(tabId).classList.add('active');
+            // Highlight selected button
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-200');
+            activeBtn.classList.add('bg-brand', 'text-white', 'shadow');
         }
-        function toggleTheme() { document.body.classList.toggle('dark-mode'); }
-        function filterAthletes() {
-            let filter = document.getElementById('search').value.toLowerCase();
-            document.querySelectorAll('#athlete-list li').forEach(item => {
-                item.style.display = item.innerText.toLowerCase().includes(filter) ? "" : "none";
+
+        // --- THEME LOGIC ---
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // --- RENDER SCHEDULE ---
+        function renderSchedule() {
+            const container = document.getElementById('schedule-container');
+            scheduleData.forEach(dayInfo => {
+                let html = `
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="bg-slate-100 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 font-black uppercase text-brand">${dayInfo.day}</div>
+                    <div class="divide-y divide-slate-100 dark:divide-slate-700/50">`;
+                
+                dayInfo.events.forEach(event => {
+                    html += `
+                        <div class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs font-bold bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">${event.time}</span>
+                                <h3 class="text-sm font-bold">${event.title}</h3>
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 pl-2 border-l-2 border-slate-300 dark:border-slate-600 ml-1 mt-1">${event.details}</p>
+                        </div>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
             });
         }
-        function pinAthlete(el) { el.classList.toggle('pinned-athlete'); }
-        // Load/Save scratchpad
-        const pad = document.getElementById('scratchpad');
-        pad.value = localStorage.getItem('scratchpad') || '';
-        pad.oninput = () => localStorage.setItem('scratchpad', pad.value);
+
+        // --- RENDER ATHLETES & PINNING ---
+        function renderAthletes() {
+            const container = document.getElementById('athlete-container');
+            container.innerHTML = '';
+            
+            athletesData.forEach(ath => {
+                const isPinned = pinnedAthletes.has(ath.id);
+                const pinClass = isPinned ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400';
+                
+                container.innerHTML += `
+                    <div class="athlete-card bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex justify-between items-center" data-name="${ath.name.toLowerCase()}" data-country="${ath.country.toLowerCase()}" data-class="${ath.category.toLowerCase()}">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${ath.flag}</span>
+                            <div>
+                                <h3 class="text-sm font-bold leading-tight">${ath.name} <span class="text-xs font-normal text-slate-500">(${ath.country})</span></h3>
+                                <p class="text-xs text-brand font-semibold">${ath.category} <span class="text-slate-400 font-normal">| ${ath.sponsor}</span></p>
+                            </div>
+                        </div>
+                        <button onclick="togglePin(${ath.id})" class="text-xl ${pinClass} transition"><i class="fa-solid fa-star"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function filterAthletes() {
+            const filter = document.getElementById('search').value.toLowerCase();
+            const cards = document.querySelectorAll('.athlete-card');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const country = card.getAttribute('data-country');
+                const category = card.getAttribute('data-class');
+                if (name.includes(filter) || country.includes(filter) || category.includes(filter)) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
+        function togglePin(id) {
+            if (pinnedAthletes.has(id)) {
+                pinnedAthletes.delete(id);
+            } else {
+                pinnedAthletes.add(id);
+            }
+            renderAthletes(); // Re-render to update star colors
+            updatePinnedBar();
+        }
+
+        function updatePinnedBar() {
+            const bar = document.getElementById('pinned-bar');
+            const list = document.getElementById('pinned-list');
+            
+            if (pinnedAthletes.size === 0) {
+                bar.classList.add('hidden');
+                return;
+            }
+            
+            bar.classList.remove('hidden');
+            let html = `<span class="font-bold text-amber-700 dark:text-amber-500 uppercase text-xs tracking-wider"><i class="fa-solid fa-star"></i> Pinned:</span>`;
+            
+            athletesData.forEach(ath => {
+                if (pinnedAthletes.has(ath.id)) {
+                    html += `<div class="bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm text-xs font-bold border border-amber-200 dark:border-amber-700/50 flex items-center gap-1">${ath.flag} ${ath.name} <button onclick="togglePin(${ath.id})" class="text-red-500 ml-1 hover:text-red-700"><i class="fa-solid fa-xmark"></i></button></div>`;
+                }
+            });
+            list.innerHTML = html;
+        }
+
+        // --- SCRATCHPAD LOGIC ---
+        function initScratchpad() {
+            const pad = document.getElementById('scratchpad');
+            pad.value = localStorage.getItem('icf_scratchpad') || '';
+            pad.addEventListener('input', () => {
+                localStorage.setItem('icf_scratchpad', pad.value);
+            });
+        }
+
+        function clearNotes() {
+            if (confirm("Are you sure you want to clear your scratchpad?")) {
+                document.getElementById('scratchpad').value = '';
+                localStorage.removeItem('icf_scratchpad');
+            }
+        }
     </script>
 </body>
 </html>
