@@ -151,14 +151,19 @@
         <!-- Admin Page -->
         <div id="admin" class="page bg-white p-6 rounded-lg shadow border dark:border-gray-700 space-y-8">
             
-            <!-- Bulk CSV Import Section -->
-            <div class="bg-blue-50 p-4 rounded border border-blue-200">
-                <h2 class="text-lg font-bold mb-2 text-blue-800">Bulk Import Racers (CSV)</h2>
-                <p class="text-xs text-gray-800 dark:text-gray-200 mb-3">Expected format: <strong>Name, Country, Category</strong>.</p>
-                <div class="flex items-center gap-3">
+            <!-- Data Import Section -->
+            <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded border border-blue-200 dark:border-blue-800">
+                <h2 class="text-lg font-bold mb-2 text-blue-800 dark:text-blue-300">Data Synchronization</h2>
+                <p class="text-xs text-gray-800 dark:text-gray-200 mb-3">Sync racers from your GitHub `athletes.json` file, or bulk import via CSV.</p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button onclick="syncJSON()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 shadow flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-down"></i> Sync JSON from Server</button>
+                    
+                    <div class="h-6 w-px bg-blue-300 dark:bg-blue-700 mx-2 hidden sm:block"></div>
+                    
                     <input type="file" id="csv-file" accept=".csv" class="text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
-                    <button onclick="importCSV()" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700">Import</button>
-                    <button onclick="clearAllAthletes()" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-700 ml-auto">Clear All</button>
+                    <button onclick="importCSV()" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-green-700 shadow">Import CSV</button>
+                    
+                    <button onclick="clearAllAthletes()" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-700 ml-auto shadow">Clear Database</button>
                 </div>
             </div>
 
@@ -170,8 +175,8 @@
                     <!-- Racer List -->
                     <div class="flex flex-col">
                         <div class="flex gap-2 mb-2">
-                            <button onclick="sortAdminAthletes('forename')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold">Sort Forename</button>
-                            <button onclick="sortAdminAthletes('surname')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold">Sort Surname</button>
+                            <button onclick="sortAdminAthletes('forename')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm">Sort Forename</button>
+                            <button onclick="sortAdminAthletes('surname')" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm">Sort Surname</button>
                         </div>
                         <div class="flex-grow max-h-96 overflow-y-auto border rounded p-2 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
                             <ul id="admin-athlete-list" class="text-sm space-y-1">
@@ -190,20 +195,20 @@
                             <input type="hidden" id="edit-id">
                             
                             <div class="grid grid-cols-2 gap-2 mb-2">
-                                <div><label class="block text-xs font-bold mb-1">Name</label><input type="text" id="edit-name" required class="w-full p-1.5 border rounded text-xs"></div>
-                                <div><label class="block text-xs font-bold mb-1">Nationality</label><input type="text" id="edit-country" required class="w-full p-1.5 border rounded text-xs" placeholder="e.g. AUS"></div>
+                                <div><label class="block text-xs font-bold mb-1">Name</label><input type="text" id="edit-name" required class="w-full p-1.5 border rounded text-xs shadow-sm"></div>
+                                <div><label class="block text-xs font-bold mb-1">Nationality</label><input type="text" id="edit-country" required class="w-full p-1.5 border rounded text-xs shadow-sm" placeholder="e.g. AUS"></div>
                             </div>
                             
                             <div class="grid grid-cols-2 gap-2 mb-2">
                                 <div>
                                     <label class="block text-xs font-bold mb-1">Event</label>
-                                    <select id="edit-event" class="w-full p-1.5 border rounded text-xs">
+                                    <select id="edit-event" class="w-full p-1.5 border rounded text-xs shadow-sm">
                                         <option value="ICF">ICF</option><option value="SUPERfestival">SUPERfestival</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold mb-1">Gender</label>
-                                    <select id="edit-gender" class="w-full p-1.5 border rounded text-xs">
+                                    <select id="edit-gender" class="w-full p-1.5 border rounded text-xs shadow-sm">
                                         <option value="Male">Male</option><option value="Female">Female</option>
                                     </select>
                                 </div>
@@ -212,19 +217,19 @@
                             <div class="grid grid-cols-2 gap-2 mb-2">
                                 <div>
                                     <label class="block text-xs font-bold mb-1">Class</label>
-                                    <select id="edit-class" class="w-full p-1.5 border rounded text-xs">
+                                    <select id="edit-class" class="w-full p-1.5 border rounded text-xs shadow-sm">
                                         <option value="Open">Open</option><option value="Junior">Junior</option><option value="O40s">O40s</option><option value="O50s">O50s</option><option value="O60s">O60s</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold mb-1">Race Types (Comma separated)</label>
-                                    <input type="text" id="edit-types" class="w-full p-1.5 border rounded text-xs" placeholder="Sprint, Distance, Technical">
+                                    <input type="text" id="edit-types" class="w-full p-1.5 border rounded text-xs shadow-sm" placeholder="Sprint, Distance, Technical">
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="block text-xs font-bold mb-1">Expanded Notes</label>
-                                <textarea id="edit-notes" class="w-full p-1.5 border rounded text-xs" rows="3" placeholder="Add detailed broadcaster notes here..."></textarea>
+                                <textarea id="edit-notes" class="w-full p-1.5 border rounded text-xs shadow-sm" rows="3" placeholder="Add detailed broadcaster notes here..."></textarea>
                             </div>
 
                             <button type="submit" id="form-submit-btn" class="w-full bg-green-600 text-white py-2 rounded text-sm font-bold hover:bg-green-700 shadow">Add Racer</button>
@@ -240,11 +245,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                         <div>
                             <label class="block text-xs font-bold mb-1">Title</label>
-                            <input type="text" id="tp-title" required class="w-full p-1.5 border rounded text-sm">
+                            <input type="text" id="tp-title" required class="w-full p-1.5 border rounded text-sm shadow-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-bold mb-1">Category</label>
-                            <select id="tp-category" required class="w-full p-1.5 border rounded text-sm">
+                            <select id="tp-category" required class="w-full p-1.5 border rounded text-sm shadow-sm">
                                 <option value="Local">Local</option>
                                 <option value="Sponsors">Sponsors</option>
                                 <option value="Race info">Race info</option>
@@ -253,7 +258,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="block text-xs font-bold mb-1">Content</label>
-                        <textarea id="tp-content" required class="w-full p-1.5 border rounded text-sm" rows="2"></textarea>
+                        <textarea id="tp-content" required class="w-full p-1.5 border rounded text-sm shadow-sm" rows="2"></textarea>
                     </div>
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 shadow">Save Talk Point</button>
                 </form>
@@ -261,6 +266,9 @@
         </div>
 
     </div>
+
+    <!-- FontAwesome for Icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     <script>
         // --- Live Clock ---
@@ -272,11 +280,7 @@
         updateClock();
 
         // --- Data States ---
-        let athletes = JSON.parse(localStorage.getItem('icf_athletes')) || [
-            { id: 1, name: "Michael Booth", country: "AUS", event: "ICF", gender: "Male", class: "Open", raceTypes: "Sprint, Distance", notes: "Dominant long-distance paddler. Renowned for strategic pacing.", isPinned: false },
-            { id: 2, name: "Esperanza Barreras", country: "ESP", event: "ICF", gender: "Female", class: "Open", raceTypes: "Technical, Distance", notes: "Technical masterclass. Incredibly fast buoy turns.", isPinned: false },
-            { id: 3, name: "Noic Garioud", country: "FRA", event: "ICF", gender: "Male", class: "Open", raceTypes: "Sprint", notes: "Explosive sprinter. Famous for high cadence starts.", isPinned: false }
-        ];
+        let athletes = [];
 
         let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points')) || [
             { id: 1, title: "UNESCO Global Geopark", content: "Torbay's unique geology provides our race venue with beautiful red sandstone cliffs.", category: "Local" },
@@ -285,7 +289,7 @@
             { id: 4, title: "Drafting Rules", content: "Athletes may only draft within their own gender and board class.", category: "Race info" }
         ];
 
-        // Comprehensive Tides Data for Torquay (June 20-29, 2026) - Simulated Semi-diurnal
+        // Comprehensive Tides Data for Torquay (June 20-29, 2026)
         const tidesData = [
             { date: '2026-06-20', type: 'Low', time: '00:00', height: 1.1, diff: 3.1 },
             { date: '2026-06-20', type: 'High', time: '06:10', height: 4.2, diff: 3.1 },
@@ -330,8 +334,7 @@
 
         // --- Initialization ---
         document.addEventListener("DOMContentLoaded", () => {
-            renderAthletes();
-            renderAdminAthletes();
+            initAthletesData();
             renderTalkPoints();
             renderTides();
             calculateNextTide();
@@ -341,6 +344,39 @@
             pad.value = localStorage.getItem('scratchpad') || '';
             pad.oninput = () => localStorage.setItem('scratchpad', pad.value);
         });
+
+        // --- JSON Synchronization & Loading ---
+        async function initAthletesData() {
+            const localData = localStorage.getItem('icf_athletes');
+            if (localData && JSON.parse(localData).length > 0) {
+                // Load from browser memory if available
+                athletes = JSON.parse(localData);
+                renderAthletes();
+                renderAdminAthletes();
+            } else {
+                // If local storage is empty, fetch JSON automatically
+                await syncJSON(false);
+            }
+        }
+
+        async function syncJSON(showAlert = true) {
+            try {
+                // Fetches athletes.json from the same directory as this HTML file
+                const response = await fetch('athletes.json');
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                athletes = data;
+                saveAthletesData();
+                renderAthletes();
+                renderAdminAthletes();
+                
+                if (showAlert) alert("Racers synchronized successfully from server!");
+            } catch (error) {
+                console.error("Failed to fetch athletes.json:", error);
+                if (showAlert) alert("Could not pull data. Ensure 'athletes.json' exists on the server.");
+            }
+        }
 
         // --- Navigation & Theme ---
         function showPage(pageId) {
@@ -362,20 +398,20 @@
             athletes.forEach(a => {
                 const pinClass = a.isPinned ? 'pinned-athlete shadow-sm' : 'border border-transparent dark:border-gray-700';
                 
-                // Constructing badges
+                // Constructing badges safely
                 const badges = `
-                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.event}</span>
-                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.gender}</span>
-                    <span class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-1.5 py-0.5 rounded">${a.class}</span>
-                    <span class="text-gray-500 text-[10px] uppercase ml-1">${a.raceTypes}</span>
+                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.event || 'N/A'}</span>
+                    <span class="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">${a.gender || 'N/A'}</span>
+                    <span class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-1.5 py-0.5 rounded">${a.class || 'N/A'}</span>
+                    <span class="text-gray-500 text-[10px] uppercase ml-1">${a.raceTypes || ''}</span>
                 `;
 
                 list.innerHTML += `
                     <li class="p-3 rounded bg-white dark:bg-gray-800 shadow-sm flex flex-col gap-2 ${pinClass}" 
                         data-search="${(a.name + ' ' + a.country).toLowerCase()}" 
-                        data-event="${a.event}" 
-                        data-gender="${a.gender}" 
-                        data-class="${a.class}" 
+                        data-event="${a.event || ''}" 
+                        data-gender="${a.gender || ''}" 
+                        data-class="${a.class || ''}" 
                         data-types="${(a.raceTypes || '').toLowerCase()}">
                         
                         <div class="flex justify-between items-start">
@@ -387,11 +423,11 @@
                             </div>
                             <div class="flex flex-col gap-2 items-end">
                                 <button onclick="togglePin(${a.id})" class="text-xs ${a.isPinned ? 'text-yellow-600 dark:text-yellow-400 font-bold' : 'text-gray-400'}"><i class="fa-solid fa-star"></i> Pin</button>
-                                ${a.notes ? `<button onclick="toggleNotes(event, ${a.id})" class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600">Expand</button>` : ''}
+                                ${a.notes ? `<button onclick="toggleNotes(event, ${a.id})" class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 shadow-sm border dark:border-gray-600">Expand Notes</button>` : ''}
                             </div>
                         </div>
                         
-                        ${a.notes ? `<div id="notes-${a.id}" class="hidden mt-2 p-2 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded text-xs text-gray-700 dark:text-gray-200 italic">${a.notes}</div>` : ''}
+                        ${a.notes ? `<div id="notes-${a.id}" class="hidden mt-2 p-2 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded text-xs text-gray-700 dark:text-gray-200 italic leading-relaxed">${a.notes}</div>` : ''}
                     </li>`;
             });
             filterAthletes();
@@ -452,7 +488,10 @@
                 list.innerHTML += `
                     <li class="flex justify-between items-center p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded border-b dark:border-gray-600">
                         <span>${a.name} <span class="text-xs text-gray-500">(${a.country})</span></span>
-                        <button onclick="editAthlete(${a.id})" class="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded hover:bg-blue-200">Edit</button>
+                        <div>
+                            <button onclick="editAthlete(${a.id})" class="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded hover:bg-blue-200">Edit</button>
+                            <button onclick="deleteAthlete(${a.id})" class="text-xs bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 px-2 py-1 rounded hover:bg-red-200 ml-1">Delete</button>
+                        </div>
                     </li>`;
             });
         }
@@ -522,6 +561,16 @@
             resetAthleteForm();
         }
 
+        function deleteAthlete(id) {
+            if (confirm("Are you sure you want to permanently delete this racer?")) {
+                athletes = athletes.filter(a => a.id !== id);
+                saveAthletesData();
+                renderAthletes();
+                renderAdminAthletes();
+                resetAthleteForm();
+            }
+        }
+
         function resetAthleteForm() {
             document.getElementById('athlete-form').reset();
             document.getElementById('edit-id').value = '';
@@ -533,6 +582,79 @@
 
         function saveAthletesData() {
             localStorage.setItem('icf_athletes', JSON.stringify(athletes));
+        }
+
+        function clearAllAthletes() {
+            if(confirm("WARNING: This will permanently delete all racer data from this device. Proceed?")) {
+                athletes = [];
+                saveAthletesData();
+                renderAthletes();
+                renderAdminAthletes();
+            }
+        }
+
+        // --- CSV Engine ---
+        function parseCSVLine(text) {
+            let ret = [], col = '', inQuote = false;
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                if (c === '"' && text[i+1] === '"') { col += '"'; i++; }
+                else if (c === '"') { inQuote = !inQuote; }
+                else if (c === ',' && !inQuote) { ret.push(col.trim()); col = ''; }
+                else { col += c; }
+            }
+            ret.push(col.trim());
+            return ret;
+        }
+
+        function importCSV() {
+            const fileInput = document.getElementById('csv-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert("Please select a CSV file first.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const rows = text.split('\n');
+                let newAthletes = [];
+                let startId = athletes.length > 0 ? Math.max(...athletes.map(a => a.id)) + 1 : 1;
+
+                rows.forEach((row, index) => {
+                    if (index === 0 || !row.trim()) return; // skip header/empty
+                    
+                    const cols = parseCSVLine(row);
+                    if (cols.length >= 3) {
+                        newAthletes.push({
+                            id: startId++,
+                            name: cols[0],
+                            country: cols[1],
+                            category: cols[2],
+                            event: 'ICF', // defaults for CSV imports
+                            gender: 'Male',
+                            class: 'Open',
+                            raceTypes: '',
+                            notes: '',
+                            isPinned: false
+                        });
+                    }
+                });
+
+                if (newAthletes.length > 0) {
+                    athletes = [...athletes, ...newAthletes];
+                    saveAthletesData();
+                    renderAthletes();
+                    renderAdminAthletes();
+                    alert(`Successfully imported ${newAthletes.length} racers.`);
+                    fileInput.value = ''; 
+                } else {
+                    alert("No valid racer data found. Ensure the format is: Name, Country, Category");
+                }
+            };
+            reader.readAsText(file);
         }
 
         // --- Talk Points ---
@@ -578,10 +700,8 @@
             tbody.innerHTML = '';
             
             const now = new Date();
-            // Get YYYY-MM-DD for local time
             const todayStr = new Date(now.getTime() - (now.getTimezoneOffset() * 60000 )).toISOString().split("T")[0];
 
-            // Filter out past days
             const upcomingTides = tidesData.filter(t => t.date >= todayStr);
 
             const formatStr = (dStr) => {
