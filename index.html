@@ -389,12 +389,66 @@
             pad.oninput = () => localStorage.setItem('scratchpad', pad.value);
         });
 
+        // --- Master Data Normalizer for JSON and CSV ---
+        function normalizeAthleteData(dataArray) {
+            return dataArray.map((a, index) => {
+                let name = a.name || a.Name || a.NAME || a['Athlete'] || a['Racer'] || 'Unknown';
+                let country = a.country || a.Country || a.COUNTRY || a['Nation'] || 'TBD';
+                let ev = a.event || a.Event || a.EVENT || a['Race Event'] || a['race event'];
+                let gen = a.gender || a.Gender || a.GENDER || a['Sex'] || a['sex'];
+                let cls = a.class || a.Class || a.category || a.Category || a['Age/Category'] || a['age/category'] || 'Open';
+                let rt = a.raceTypes || a.RaceTypes || a['Race Types'] || a['race types'];
+                let notes = a.notes || a.Notes || '';
+
+                if (gen) {
+                    if (gen.toUpperCase().startsWith('M')) gen = 'Male';
+                    else if (gen.toUpperCase().startsWith('F')) gen = 'Female';
+                } else {
+                    gen = 'Unspecified';
+                }
+
+                if (!rt) {
+                    let typeSet = new Set();
+                    let evSet = new Set();
+                    if (ev) evSet.add(ev);
+
+                    const isY = (val) => val && String(val).trim().toLowerCase().startsWith('y');
+                    
+                    if (isY(a['ICF Distance']) || isY(a['icf distance']) || isY(a['ICF DISTANCE'])) { evSet.add('ICF'); typeSet.add('Distance'); }
+                    if (isY(a['Festival Distance']) || isY(a['festival distance'])) { evSet.add('SUPERfestival'); typeSet.add('Distance'); }
+                    if (isY(a['Festival Sprint']) || isY(a['festival sprint'])) { evSet.add('SUPERfestival'); typeSet.add('Sprint'); }
+                    if (isY(a['Festival Tech']) || isY(a['festival tech'])) { evSet.add('SUPERfestival'); typeSet.add('Technical'); }
+                    if (isY(a['ICF SPRINT']) || isY(a['icf sprint'])) { evSet.add('ICF'); typeSet.add('Sprint'); }
+                    if (isY(a['ICF Tech']) || isY(a['icf tech'])) { evSet.add('ICF'); typeSet.add('Technical'); }
+
+                    if (evSet.size > 1) ev = 'Mixed';
+                    else if (evSet.size === 1) ev = evSet.values().next().value;
+                    
+                    rt = Array.from(typeSet).join(', ') || 'TBD';
+                }
+
+                if (ev && ev.toLowerCase() === 'festival') ev = 'SUPERfestival';
+
+                return {
+                    id: a.id || a.Id || index + 1,
+                    name: name,
+                    country: country,
+                    event: ev || 'Unspecified',
+                    gender: gen,
+                    class: cls,
+                    raceTypes: rt,
+                    notes: notes,
+                    isPinned: !!a.isPinned
+                };
+            }).filter(a => a.name !== 'Unknown');
+        }
+
         async function initAthletesData() {
             const localData = localStorage.getItem('icf_athletes');
             let parsedData = localData ? JSON.parse(localData) : [];
             
             if (parsedData.length > 0) {
-                athletes = parsedData;
+                athletes = normalizeAthleteData(parsedData);
                 renderAthletes();
                 renderAdminAthletes();
             } else {
@@ -407,7 +461,9 @@
                 const response = await fetch('athletes.json');
                 if (!response.ok) throw new Error('Network response was not ok');
                 
-                athletes = await response.json();
+                const rawData = await response.json();
+                athletes = normalizeAthleteData(rawData);
+                
                 saveAthletesData();
                 renderAthletes();
                 renderAdminAthletes();
@@ -415,7 +471,15 @@
                 if (showAlert) alert("Racers synchronized successfully from server!");
             } catch (error) {
                 console.error("Failed to fetch JSON:", error);
-                if (showAlert) alert("Could not pull JSON. Ensure athletes.json exists and the server is running.");
+                athletes = [
+                    { id: 1, name: "Michael Booth", country: "AUS", event: "ICF", gender: "Male", class: "Open", raceTypes: "Sprint, Distance", notes: "Dominant long-distance paddler.", isPinned: false },
+                    { id: 2, name: "Esperanza Barreras", country: "ESP", event: "ICF", gender: "Female", class: "Open", raceTypes: "Technical, Distance", notes: "Technical masterclass.", isPinned: false },
+                    { id: 3, name: "Noic Garioud", country: "FRA", event: "SUPERfestival", gender: "Male", class: "Open", raceTypes: "Sprint", notes: "Explosive sprinter.", isPinned: false }
+                ];
+                saveAthletesData();
+                renderAthletes();
+                renderAdminAthletes();
+                if (showAlert) alert("Could not pull JSON. Loaded default fallback data instead.");
             }
         }
 
@@ -736,6 +800,7 @@
                 const iCat = getIndex(headers, ['category', 'age', 'class']);
                 const iCountry = getIndex(headers, ['country', 'nation']);
                 const iGender = getIndex(headers, ['gender', 'sex']);
+                const iEvent = getIndex(headers, ['race event', 'event']);
                 
                 const iIcfDist = getIndex(headers, ['icf distance']);
                 const iFestDist = getIndex(headers, ['festival distance']);
@@ -769,6 +834,12 @@
 
                     let evSet = new Set();
                     let typeSet = new Set();
+
+                    if(iEvent > -1 && cols[iEvent] && cols[iEvent].trim() !== '') {
+                        let evRaw = cols[iEvent].trim();
+                        if(evRaw.toLowerCase() === 'festival') evRaw = 'SUPERfestival';
+                        evSet.add(evRaw);
+                    }
 
                     if(isYes(cols, iIcfDist)) { evSet.add('ICF'); typeSet.add('Distance'); }
                     if(isYes(cols, iFestDist)) { evSet.add('SUPERfestival'); typeSet.add('Distance'); }
