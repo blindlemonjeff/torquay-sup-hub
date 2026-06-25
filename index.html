@@ -328,20 +328,31 @@
 
         let athletes = [];
 
-        // Upgraded specific Talk Points data with the requested sponsors
         const defaultTalkPoints = [
             { id: 1, title: "UNESCO Global Geopark", content: "Torbay's unique geology provides our race venue with beautiful red sandstone cliffs.", category: "Local" },
             { id: 2, title: "Agatha Christie", content: "Born in Torquay, known worldwide as the Queen of Crime.", category: "Local" },
             { id: 3, title: "Drafting Rules", content: "Athletes may only draft within their own gender and board class.", category: "Race info" },
-            { id: 4, title: "Paddle UK", content: "Promoting national water safety, the 'Go Paddling' campaign, and protecting beautiful blue spaces across the Southwest.", category: "Sponsors" },
-            { id: 5, title: "English Riviera BID Company", content: "Showcasing Torbay's incredible coastline, sheltered microclimate, and status as a premier UK tourist destination.", category: "Sponsors" },
-            { id: 6, title: "Torbay Council", content: "Local authority partners providing essential support for the event infrastructure and safety at Torre Abbey Sands.", category: "Sponsors" },
-            { id: 7, title: "Blackfish Paddles", content: "High-performance carbon paddles, designed in Canada. Check out their demo fleet at the Festival Seafront Village.", category: "Sponsors" },
-            { id: 8, title: "SUPboarder Magazine", content: "Official media partners and the world's leading stand up paddleboarding magazine, providing comprehensive event coverage.", category: "Sponsors" },
-            { id: 9, title: "Starboard", content: "Leading the industry in high-performance SUP boards and environmental sustainability initiatives.", category: "Sponsors" }
+            { id: 4, title: "Above Water", content: "Dedicated to improving water safety through education and practical skills training. Their programs empower communities to stay safe and confident when enjoying the water. (abovewater.org)", category: "Sponsors" },
+            { id: 5, title: "Bays Brewery", content: "A family-run brewery in the heart of Torbay, crafting award-winning ales inspired by the local landscape. They are proud to support community events that bring people together in their home region. (baysbrewery.co.uk)", category: "Sponsors" },
+            { id: 6, title: "Anjana Marine Sport", content: "Specializing in high-performance equipment for competitive paddling and water sports enthusiasts. They provide the professional gear necessary for athletes to reach their full potential on the water. (anjanaindustries.com)", category: "Sponsors" },
+            { id: 7, title: "Blackfish Paddles", content: "Renowned for designing premium, high-quality paddles for stand-up paddleboarding and outrigger canoeing. Their commitment to innovation and sustainability helps paddlers perform at the highest levels. (blackfishpaddles.com)", category: "Sponsors" },
+            { id: 8, title: "Milligan", content: "A development firm focused on transforming spaces to create vibrant, sustainable, and thriving communities. Their work in Torbay emphasizes regeneration and long-term economic growth. (milliganltd.com/works/torbay-multi-site-regeneration/)", category: "Sponsors" },
+            { id: 9, title: "BYD", content: "A global leader in electric vehicles and sustainable technology committed to cooling the earth. They drive innovation in clean energy transport to foster a greener, more efficient future. (byd.com)", category: "Sponsors" },
+            { id: 10, title: "Dainton Self Storage", content: "Providing flexible, secure storage solutions for homes and businesses across the region.", category: "Sponsors" },
+            { id: 11, title: "Pro:Direct Sport", content: "Dedicated to providing the world’s best performance sports gear to athletes everywhere. Their passion for sport and innovation is evident in their commitment to equipping athletes for success. (prodirectsport.com)", category: "Sponsors" },
+            { id: 12, title: "Hampton By Hilton", content: "Providing comfortable, reliable accommodations and signature service for travelers visiting the Torquay area. They are committed to delivering a warm and welcoming experience for guests in every stay. (hilton.com)", category: "Sponsors" },
+            { id: 13, title: "Pei Sheng", content: "Official sponsor supporting the events and athletes.", category: "Sponsors" },
+            { id: 14, title: "Plastex", content: "Official sponsor supporting the events and athletes.", category: "Sponsors" },
+            { id: 15, title: "Braca Sport", content: "A premier manufacturer of high-performance paddles and rowing equipment used by Olympic and world-class champions. They continue to set the industry standard for precision, durability, and speed. (paddles.braca-sport.com)", category: "Sponsors" },
+            { id: 16, title: "Shoretees", content: "Mark provides board apparal and been a huge part of all events and SUP sport in the UK and Above Water for many years.", category: "Sponsors" },
+            { id: 17, title: "Tides", content: "Beautiful restaurant with views of Torre Abbey and a centre for the event.", category: "Sponsors" },
+            { id: 18, title: "Wollens", content: "A leading South West law firm providing a comprehensive range of legal services to businesses and individuals. They are deeply committed to their local community and actively support regional initiatives. (wollens.co.uk)", category: "Sponsors" },
+            { id: 19, title: "Yak Shak", content: "Automated hire service for paddlesports drowing across the UK.", category: "Sponsors" },
+            { id: 20, title: "Otto Kitchen Pizza Bar", content: "Overlooking the inner harbour Torquay, beautiful food with a stunning view.", category: "Sponsors" },
+            { id: 21, title: "International Canoe Federation", content: "The global governing body responsible for the development and promotion of all canoeing and kayaking disciplines. They set international standards and organize major world-class competitions across the globe. (canoeicf.com)", category: "Sponsors" }
         ];
 
-        let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points_v2')) || defaultTalkPoints;
+        let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points_v3')) || defaultTalkPoints;
 
         const tidesData = [
             { date: '2026-06-20', type: 'Low', time: '00:00', height: 1.1, diff: 3.1 },
@@ -920,7 +931,7 @@
                 content: document.getElementById('tp-content').value
             };
             talkPoints.push(newTp);
-            localStorage.setItem('icf_talk_points_v2', JSON.stringify(talkPoints));
+            localStorage.setItem('icf_talk_points_v3', JSON.stringify(talkPoints));
             renderTalkPoints();
             e.target.reset();
         }
