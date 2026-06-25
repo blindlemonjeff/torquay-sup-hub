@@ -1,92 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICF SUP Commentator Dashboard</title>
+    <title>ICF SUP World Cup Commentator Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { brand: '#0284c7' } } }
+        }
+    </script>
     <style>
-        .page { display: none; }
-        .page.active { display: block; }
-        body.dark-mode { background-color: #0f172a; color: #f8fafc; }
-        body.dark-mode .bg-white { background-color: #1e293b; color: #f8fafc; border-color: #334155; }
-        .pinned-athlete { border-left: 4px solid #f59e0b; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        body { transition: background-color 0.3s, color 0.3s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-gray-100 p-4 transition-colors duration-300">
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold text-brand-900 uppercase tracking-tight">SUP Commentator Hub</h1>
-            <button onclick="document.body.classList.toggle('dark-mode')" class="bg-brand-700 text-white px-3 py-1 rounded text-sm hover:bg-brand-800 transition-colors">Toggle Night Mode</button>
-        </header>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-slate-100 min-h-screen pb-10">
 
-        <nav class="flex gap-2 mb-6 overflow-x-auto pb-2">
-            <button onclick="showPage('schedule')" class="nav-btn px-4 py-1.5 bg-brand-900 text-white rounded text-sm">Schedule</button>
-            <button onclick="showPage('athletes')" class="nav-btn px-4 py-1.5 bg-brand-900 text-white rounded text-sm">Athletes</button>
-            <button onclick="showPage('talk-points')" class="nav-btn px-4 py-1.5 bg-brand-900 text-white rounded text-sm">Talk Points</button>
-            <button onclick="showPage('admin')" class="nav-btn px-4 py-1.5 bg-brand-900 text-white rounded text-sm">Admin</button>
-        </nav>
-
-        <div id="talk-points" class="page bg-white p-6 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-4 border-b pb-2">Talk Points</h2>
-            <ul id="talk-points-list" class="text-sm space-y-4"></ul>
+    <div class="sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-md border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-microphone-lines text-brand text-xl"></i>
+                <h1 class="text-lg font-black tracking-tight uppercase">SUP Comm Hub</h1>
+            </div>
+            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-md text-sm font-bold flex items-center gap-2 transition">
+                <i class="fa-solid fa-circle-half-stroke"></i> Contrast
+            </button>
         </div>
 
-        <div id="admin" class="page bg-white p-6 rounded-lg shadow space-y-8">
-            <div class="bg-gray-50 p-5 rounded-lg border">
-                <h2 class="text-lg font-bold mb-4">Import Data</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-bold mb-1">Import Sponsors CSV</label>
-                        <input type="file" id="sponsor-csv" accept=".csv" class="mb-2">
-                        <button onclick="importSponsorsCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded text-sm font-bold">Import Sponsors</button>
-                    </div>
-                </div>
+        <nav class="max-w-4xl mx-auto px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+            <button onclick="showTab('schedule')" id="btn-schedule" class="tab-btn active px-4 py-2 rounded-lg text-sm font-bold bg-brand text-white shadow">Schedule</button>
+            <button onclick="showTab('athletes')" id="btn-athletes" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Athletes</button>
+            <button onclick="showTab('notes')" id="btn-notes" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Scratchpad</button>
+            <button onclick="showTab('location')" id="btn-location" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Talking Points</button>
+            <button onclick="showTab('admin')" id="btn-admin" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Admin</button>
+        </nav>
+    </div>
+
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+        <div id="schedule" class="tab-content active space-y-4">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Event Progression</h2>
+            <div id="schedule-container" class="space-y-4"></div>
+        </div>
+
+        <div id="athletes" class="tab-content">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Competitor Index</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="athlete-container"></div>
+        </div>
+
+        <div id="notes" class="tab-content">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Scratchpad</h2>
+            <textarea id="scratchpad" class="w-full h-96 p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono text-sm"></textarea>
+        </div>
+
+        <div id="location" class="tab-content">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Broadcast Talking Points</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="talk-points-container"></div>
+        </div>
+
+        <div id="admin" class="tab-content">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Data Import</h2>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <label class="block text-sm font-bold mb-2">Import Sponsors CSV</label>
+                <input type="file" id="sponsor-csv" accept=".csv" class="mb-4">
+                <button onclick="importSponsorsCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded font-bold hover:bg-emerald-700">Import Sponsors CSV</button>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points_v3')) || [];
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('bg-brand', 'text-white', 'shadow'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById(`btn-${tabId}`).classList.add('bg-brand', 'text-white', 'shadow');
         }
 
         function renderTalkPoints() {
-            const list = document.getElementById('talk-points-list');
-            list.innerHTML = '';
-            talkPoints.forEach(tp => {
-                list.innerHTML += `<li class="border-b pb-2"><strong>${tp.title}</strong><p>${tp.content}</p></li>`;
-            });
+            const container = document.getElementById('talk-points-container');
+            container.innerHTML = talkPoints.map(tp => `
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-amber-500">
+                    <h3 class="font-bold mb-2">${tp.title}</h3>
+                    <p class="text-sm opacity-90">${tp.content}</p>
+                </div>
+            `).join('');
         }
 
         function importSponsorsCSV() {
             const fileInput = document.getElementById('sponsor-csv');
-            const file = fileInput.files[0];
-            if (!file) return alert("Select a CSV file.");
-
+            if (!fileInput.files[0]) return alert("Please select a file.");
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 const rows = e.target.result.split(/\r?\n/);
                 rows.forEach(row => {
                     if (!row.includes(':')) return;
-                    const parts = row.split(':');
-                    const title = parts[0].replace(/[^a-zA-Z0-9 ]/g, '').trim();
-                    const content = parts.slice(1).join(':').trim();
-                    if(title && content) {
-                        talkPoints.push({ id: Date.now() + Math.random(), title, content, category: 'Sponsors' });
-                    }
+                    const [title, ...contentParts] = row.split(':');
+                    talkPoints.push({ title: title.trim(), content: contentParts.join(':').trim() });
                 });
                 localStorage.setItem('icf_talk_points_v3', JSON.stringify(talkPoints));
                 renderTalkPoints();
-                alert("Sponsors imported!");
+                alert("Import successful!");
             };
-            reader.readAsText(file);
+            reader.readAsText(fileInput.files[0]);
         }
 
-        document.addEventListener("DOMContentLoaded", renderTalkPoints);
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
+
+        document.addEventListener('DOMContentLoaded', () => { renderTalkPoints(); });
     </script>
 </body>
 </html>
