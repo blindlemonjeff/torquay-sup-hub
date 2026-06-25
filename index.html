@@ -328,12 +328,20 @@
 
         let athletes = [];
 
-        let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points')) || [
+        // Upgraded specific Talk Points data with the requested sponsors
+        const defaultTalkPoints = [
             { id: 1, title: "UNESCO Global Geopark", content: "Torbay's unique geology provides our race venue with beautiful red sandstone cliffs.", category: "Local" },
             { id: 2, title: "Agatha Christie", content: "Born in Torquay, known worldwide as the Queen of Crime.", category: "Local" },
-            { id: 3, title: "Paddle UK", content: "Promoting national water safety and protecting blue spaces.", category: "Sponsors" },
-            { id: 4, title: "Drafting Rules", content: "Athletes may only draft within their own gender and board class.", category: "Race info" }
+            { id: 3, title: "Drafting Rules", content: "Athletes may only draft within their own gender and board class.", category: "Race info" },
+            { id: 4, title: "Paddle UK", content: "Promoting national water safety, the 'Go Paddling' campaign, and protecting beautiful blue spaces across the Southwest.", category: "Sponsors" },
+            { id: 5, title: "English Riviera BID Company", content: "Showcasing Torbay's incredible coastline, sheltered microclimate, and status as a premier UK tourist destination.", category: "Sponsors" },
+            { id: 6, title: "Torbay Council", content: "Local authority partners providing essential support for the event infrastructure and safety at Torre Abbey Sands.", category: "Sponsors" },
+            { id: 7, title: "Blackfish Paddles", content: "High-performance carbon paddles, designed in Canada. Check out their demo fleet at the Festival Seafront Village.", category: "Sponsors" },
+            { id: 8, title: "SUPboarder Magazine", content: "Official media partners and the world's leading stand up paddleboarding magazine, providing comprehensive event coverage.", category: "Sponsors" },
+            { id: 9, title: "Starboard", content: "Leading the industry in high-performance SUP boards and environmental sustainability initiatives.", category: "Sponsors" }
         ];
+
+        let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points_v2')) || defaultTalkPoints;
 
         const tidesData = [
             { date: '2026-06-20', type: 'Low', time: '00:00', height: 1.1, diff: 3.1 },
@@ -389,7 +397,6 @@
             pad.oninput = () => localStorage.setItem('scratchpad', pad.value);
         });
 
-        // --- Master Data Normalizer for JSON and CSV ---
         function normalizeAthleteData(dataArray) {
             return dataArray.map((a, index) => {
                 let name = a.name || a.Name || a.NAME || a['Athlete'] || a['Racer'] || 'Unknown';
@@ -913,7 +920,7 @@
                 content: document.getElementById('tp-content').value
             };
             talkPoints.push(newTp);
-            localStorage.setItem('icf_talk_points', JSON.stringify(talkPoints));
+            localStorage.setItem('icf_talk_points_v2', JSON.stringify(talkPoints));
             renderTalkPoints();
             e.target.reset();
         }
