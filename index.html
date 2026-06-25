@@ -186,6 +186,12 @@
                     
                     <button onclick="clearAllAthletes()" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-700 shadow transition-colors sm:ml-auto w-full sm:w-auto">Clear Database</button>
                 </div>
+                
+                <!-- Talk Points / Sponsors CSV Import -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto mt-4 pt-4 border-t border-brand-200 dark:border-brand-700">
+                    <input type="file" id="tp-csv-file" accept=".csv, text/csv, application/vnd.ms-excel" class="text-sm file:mr-2 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-gray-200 file:text-gray-800 dark:file:bg-gray-700 dark:file:text-white hover:file:bg-gray-300 dark:hover:file:bg-gray-600 cursor-pointer w-full sm:w-auto border border-brand-300 dark:border-brand-700 rounded bg-white dark:bg-gray-800">
+                    <button onclick="importTalkPointsCSV()" class="bg-purple-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-purple-700 shadow transition-colors w-full sm:w-auto">Import Sponsors CSV</button>
+                </div>
             </div>
 
             <div>
@@ -476,6 +482,12 @@
 
         async function syncJSON(showAlert = true) {
             try {
+                // Determine if we are in a local or blob environment where relative fetch is not supported
+                const isLocalEnv = window.location.protocol.includes('blob') || window.location.protocol === 'file:' || window.location.protocol === 'data:';
+                if (isLocalEnv) {
+                    throw new Error("Local/Blob environment detected. Bypassing relative JSON fetch.");
+                }
+
                 const response = await fetch('athletes.json');
                 if (!response.ok) throw new Error('Network response was not ok');
                 
@@ -488,7 +500,7 @@
                 
                 if (showAlert) alert("Racers synchronized successfully from server!");
             } catch (error) {
-                console.error("Failed to fetch JSON:", error);
+                console.warn("Using default fallback data. Reason:", error.message);
                 athletes = [
                     { id: 1, name: "Michael Booth", country: "AUS", event: "ICF", gender: "Male", class: "Open", raceTypes: "Sprint, Distance", notes: "Dominant long-distance paddler.", isPinned: false },
                     { id: 2, name: "Esperanza Barreras", country: "ESP", event: "ICF", gender: "Female", class: "Open", raceTypes: "Technical, Distance", notes: "Technical masterclass.", isPinned: false },
@@ -497,7 +509,7 @@
                 saveAthletesData();
                 renderAthletes();
                 renderAdminAthletes();
-                if (showAlert) alert("Could not pull JSON. Loaded default fallback data instead.");
+                if (showAlert) alert("Could not pull JSON from server. Loaded default fallback data instead.");
             }
         }
 
@@ -895,6 +907,77 @@
                     fileInput.value = ''; 
                 } else {
                     alert("No valid racer rows were parsed. Ensure your CSV has a column identifying names.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function importTalkPointsCSV() {
+            const fileInput = document.getElementById('tp-csv-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert("Please select a Sponsor/Talk Points CSV file first.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const rows = text.split(/\r?\n/);
+                if(rows.length < 2) {
+                    alert("The CSV file appears to be empty or missing headers.");
+                    return;
+                }
+
+                const headers = parseCSVLine(rows[0].toLowerCase());
+                const getIndex = (arr, keywords) => arr.findIndex(h => keywords.some(k => h.includes(k)));
+                
+                const iTitle = getIndex(headers, ['title', 'sponsor', 'name', 'brand']);
+                const iContent = getIndex(headers, ['content', 'description', 'notes', 'text', 'info']);
+                const iCategory = getIndex(headers, ['category', 'type', 'group']);
+
+                if (iTitle === -1 || iContent === -1) {
+                    alert("Could not find 'Title' and 'Content' columns. Please check your CSV format.");
+                    return;
+                }
+
+                let newPoints = [];
+                
+                const sanitize = (str) => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+                for (let i = 1; i < rows.length; i++) {
+                    if (!rows[i].trim()) continue; 
+
+                    const cols = parseCSVLine(rows[i]);
+                    const title = (iTitle > -1 && cols[iTitle]) ? cols[iTitle].trim() : '';
+                    const content = (iContent > -1 && cols[iContent]) ? cols[iContent].trim() : '';
+
+                    if (!title || !content) continue;
+
+                    let category = 'Sponsors'; 
+                    if (iCategory > -1 && cols[iCategory] && cols[iCategory].trim() !== '') {
+                        const parsedCat = cols[iCategory].trim();
+                        if (parsedCat.toLowerCase().includes('local')) category = 'Local';
+                        else if (parsedCat.toLowerCase().includes('race')) category = 'Race info';
+                    }
+
+                    newPoints.push({
+                        id: Date.now() + i,
+                        title: sanitize(title),
+                        category: category,
+                        content: sanitize(content)
+                    });
+                }
+
+                if (newPoints.length > 0) {
+                    talkPoints = [...talkPoints, ...newPoints];
+                    localStorage.setItem('icf_talk_points_v3', JSON.stringify(talkPoints));
+                    renderTalkPoints();
+                    alert(`Successfully imported ${newPoints.length} talk points.`);
+                    fileInput.value = '';
+                } else {
+                    alert("No valid rows were parsed. Ensure your CSV has Title and Content data.");
                 }
             };
             reader.readAsText(file);
