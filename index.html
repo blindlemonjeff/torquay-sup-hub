@@ -34,18 +34,27 @@
         </div>
 
         <nav class="max-w-4xl mx-auto px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
-            <button onclick="showTab('schedule')" id="btn-schedule" class="tab-btn active px-4 py-2 rounded-lg text-sm font-bold bg-brand text-white shadow">Schedule</button>
+            <button onclick="showTab('schedule')" id="btn-schedule" class="tab-btn active px-4 py-2 rounded-lg text-sm font-bold bg-brand text-white shadow">Progression</button>
             <button onclick="showTab('athletes')" id="btn-athletes" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Athletes</button>
             <button onclick="showTab('notes')" id="btn-notes" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Scratchpad</button>
-            <button onclick="showTab('location')" id="btn-location" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Talking Points</button>
+            <button onclick="showTab('location')" id="btn-location" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Sponsors</button>
             <button onclick="showTab('admin')" id="btn-admin" class="tab-btn px-4 py-2 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">Admin</button>
         </nav>
     </div>
 
     <main class="max-w-4xl mx-auto px-4 mt-6">
         <div id="schedule" class="tab-content active space-y-4">
-            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Event Progression</h2>
-            <div id="schedule-container" class="space-y-4"></div>
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Weather, Tides & Schedule</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <h3 class="font-bold text-blue-800 dark:text-blue-200 mb-2">Tides (Torre Abbey)</h3>
+                    <p class="text-sm">Low: 09:12 | High: 15:45</p>
+                </div>
+                <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-800">
+                    <h3 class="font-bold text-amber-800 dark:text-amber-200 mb-2">Weather</h3>
+                    <p class="text-sm">Wind: 12kts NW | Temp: 18°C</p>
+                </div>
+            </div>
         </div>
 
         <div id="athletes" class="tab-content">
@@ -59,22 +68,30 @@
         </div>
 
         <div id="location" class="tab-content">
-            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Broadcast Talking Points</h2>
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Broadcast Sponsors</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="talk-points-container"></div>
         </div>
 
-        <div id="admin" class="tab-content">
-            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Data Import</h2>
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <label class="block text-sm font-bold mb-2">Import Sponsors CSV</label>
-                <input type="file" id="sponsor-csv" accept=".csv" class="mb-4">
-                <button onclick="importSponsorsCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded font-bold hover:bg-emerald-700">Import Sponsors CSV</button>
+        <div id="admin" class="tab-content space-y-6">
+            <h2 class="text-xl font-black uppercase border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">Data Management</h2>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-2">Import Racers CSV</label>
+                    <input type="file" id="racer-csv" accept=".csv">
+                    <button onclick="importRacers()" class="mt-2 bg-brand text-white px-4 py-2 rounded font-bold hover:bg-blue-600">Import Racers</button>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">Import Sponsors CSV</label>
+                    <input type="file" id="sponsor-csv" accept=".csv">
+                    <button onclick="importSponsors()" class="mt-2 bg-emerald-600 text-white px-4 py-2 rounded font-bold hover:bg-emerald-700">Import Sponsors</button>
+                </div>
             </div>
         </div>
     </main>
 
     <script>
-        let talkPoints = JSON.parse(localStorage.getItem('icf_talk_points_v3')) || [];
+        let racers = JSON.parse(localStorage.getItem('icf_racers')) || [];
+        let sponsors = JSON.parse(localStorage.getItem('icf_sponsors')) || [];
         
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -83,38 +100,55 @@
             document.getElementById(`btn-${tabId}`).classList.add('bg-brand', 'text-white', 'shadow');
         }
 
-        function renderTalkPoints() {
-            const container = document.getElementById('talk-points-container');
-            container.innerHTML = talkPoints.map(tp => `
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 border-t-4 border-t-amber-500">
-                    <h3 class="font-bold mb-2">${tp.title}</h3>
-                    <p class="text-sm opacity-90">${tp.content}</p>
+        function renderData() {
+            const aCont = document.getElementById('athlete-container');
+            aCont.innerHTML = racers.map(r => `<div class="p-2 border rounded text-sm">${r.Name} (${r.Country})</div>`).join('');
+            
+            const sCont = document.getElementById('talk-points-container');
+            sCont.innerHTML = sponsors.map(s => `
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 border-l-4 border-l-emerald-500">
+                    <h3 class="font-bold">${s.title}</h3>
+                    <p class="text-xs opacity-80">${s.content}</p>
                 </div>
             `).join('');
         }
 
-        function importSponsorsCSV() {
-            const fileInput = document.getElementById('sponsor-csv');
-            if (!fileInput.files[0]) return alert("Please select a file.");
-            
+        function importRacers() {
+            const input = document.getElementById('racer-csv');
+            if (!input.files[0]) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const rows = e.target.result.split(/\r?\n/);
-                rows.forEach(row => {
-                    if (!row.includes(':')) return;
-                    const [title, ...contentParts] = row.split(':');
-                    talkPoints.push({ title: title.trim(), content: contentParts.join(':').trim() });
+            reader.onload = (e) => {
+                const lines = e.target.result.split('\n');
+                racers = lines.slice(1).filter(l => l.trim()).map(line => {
+                    const [Name, Age, Country] = line.split(',');
+                    return { Name: Name.trim(), Country: Country?.trim() };
                 });
-                localStorage.setItem('icf_talk_points_v3', JSON.stringify(talkPoints));
-                renderTalkPoints();
-                alert("Import successful!");
+                localStorage.setItem('icf_racers', JSON.stringify(racers));
+                renderData();
+                alert("Racers imported");
             };
-            reader.readAsText(fileInput.files[0]);
+            reader.readAsText(input.files[0]);
+        }
+
+        function importSponsors() {
+            const input = document.getElementById('sponsor-csv');
+            if (!input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const lines = e.target.result.split('\n');
+                sponsors = lines.map(line => {
+                    const parts = line.split(':');
+                    return { title: parts[0]?.trim(), content: parts.slice(1).join(':').trim() };
+                }).filter(s => s.title);
+                localStorage.setItem('icf_sponsors', JSON.stringify(sponsors));
+                renderData();
+                alert("Sponsors imported");
+            };
+            reader.readAsText(input.files[0]);
         }
 
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
-
-        document.addEventListener('DOMContentLoaded', () => { renderTalkPoints(); });
+        document.addEventListener('DOMContentLoaded', renderData);
     </script>
 </body>
 </html>
