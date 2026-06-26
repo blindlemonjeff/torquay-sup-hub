@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICF SUP Commentator Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -107,7 +108,7 @@
         <div id="athletes" class="page bg-white p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b border-gray-200 dark:border-gray-600 pb-2 gap-3">
                 <h2 class="text-lg font-bold text-brand-900 dark:text-brand-100">Competitor Index</h2>
-                <div class="flex gap-2">
+                <div class="flex gap-2 flex-wrap">
                     <button onclick="sortAthletes('bib')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm transition-colors text-gray-800 dark:text-white">Sort Bib</button>
                     <button onclick="sortAthletes('forename')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm transition-colors text-gray-800 dark:text-white">Sort Forename</button>
                     <button onclick="sortAthletes('surname')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm transition-colors text-gray-800 dark:text-white">Sort Surname</button>
@@ -198,7 +199,7 @@
                 <h2 class="text-lg font-bold mb-4 border-b border-gray-200 dark:border-gray-600 pb-2 text-brand-900 dark:text-brand-100">Manage Racers</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="flex flex-col h-[500px]">
-                        <div class="flex gap-2 mb-3">
+                        <div class="flex gap-2 mb-3 flex-wrap">
                             <button onclick="sortAdminAthletes('bib')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm transition-colors text-gray-800 dark:text-white">Sort Bib</button>
                             <button onclick="sortAdminAthletes('forename')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm transition-colors text-gray-800 dark:text-white">Sort Forename</button>
                             <button onclick="sortAdminAthletes('surname')" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded text-xs font-bold shadow-sm transition-colors text-gray-800 dark:text-white">Sort Surname</button>
@@ -290,8 +291,6 @@
         </div>
 
     </div>
-
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     <script>
         function updateClock() {
@@ -428,7 +427,7 @@
                 let gen = a.gender || a.Gender || a.GENDER || a['Sex'] || a['sex'];
                 let cls = a.class || a.Class || a.category || a.Category || a['Age/Category'] || a['age/category'] || 'Open';
                 let rt = a.raceTypes || a.RaceTypes || a['Race Types'] || a['race types'];
-                let notes = a.notes || a.Notes || '';
+                let notes = a.notes || a.Notes || a.bio || a.Bio || a.details || a.Details || '';
                 let bib = a.bib || a.Bib || a.BIB || a['Bib Number'] || a['bib number'] || a['Race Number'] || a['race number'] || '';
 
                 if (gen) {
@@ -469,7 +468,7 @@
                     gender: gen,
                     class: cls,
                     raceTypes: rt,
-                    notes: notes,
+                    notes: String(notes).trim(),
                     isPinned: !!a.isPinned
                 };
             }).filter(a => a.name !== 'Unknown');
@@ -602,7 +601,7 @@
                 const safeClass = a.class && a.class.trim() !== '' ? a.class : 'Open';
                 const safeTypes = a.raceTypes && a.raceTypes.trim() !== '' ? a.raceTypes : 'TBD';
                 
-                const bibBadge = a.bib ? `<span class="bg-yellow-400 text-yellow-900 dark:bg-yellow-500 dark:text-yellow-950 px-2 py-0.5 rounded text-sm font-black shadow-sm mr-2 border border-yellow-500">#${a.bib}</span>` : '';
+                const bibBadge = a.bib ? `<span class="bg-yellow-400 text-yellow-900 dark:bg-yellow-500 dark:text-yellow-950 px-2 py-0.5 rounded text-sm font-black shadow-sm border border-yellow-500">#${a.bib}</span>` : '';
 
                 const badges = `
                     <span class="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 px-2 py-0.5 rounded font-bold">${safeEvent}</span>
@@ -619,23 +618,26 @@
                         data-class="${safeClass}" 
                         data-types="${safeTypes.toLowerCase()}">
                         
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-base text-brand-900 dark:text-white font-bold flex items-center mb-1">${bibBadge}${a.name} <span class="font-normal text-gray-600 dark:text-gray-400 ml-1">(${a.country || 'TBD'})</span></span>
+                        <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
+                            <div class="flex-1">
+                                <div class="text-base text-brand-900 dark:text-white font-bold flex flex-wrap items-center gap-2 mb-1">
+                                    ${bibBadge}
+                                    <span>${a.name} <span class="font-normal text-gray-600 dark:text-gray-400 text-sm ml-1">(${a.country || 'TBD'})</span></span>
+                                </div>
                                 <div class="text-[10px] mt-2 flex flex-wrap gap-1 items-center">
                                     ${badges}
                                 </div>
                             </div>
-                            <div class="flex flex-col gap-2 items-end">
+                            <div class="flex flex-row sm:flex-col gap-2 items-center sm:items-end w-full sm:w-auto mt-2 sm:mt-0">
                                 <button onclick="togglePin(${a.id})" class="text-xs ${a.isPinned ? 'text-accent-500 font-bold drop-shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors'}"><i class="fas fa-star"></i> Pin</button>
-                                ${a.notes ? `<button onclick="toggleNotes(event, ${a.id}, this)" class="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 shadow-sm border border-gray-300 dark:border-gray-600 font-bold transition-colors flex items-center">Expand Details <i class="fas fa-chevron-down ml-1"></i></button>` : ''}
+                                ${a.notes ? `<button onclick="toggleNotes(event, ${a.id}, this)" class="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 shadow-sm border border-gray-300 dark:border-gray-600 font-bold transition-colors flex items-center whitespace-nowrap">Expand Details <i class="fas fa-chevron-down ml-1"></i></button>` : ''}
                             </div>
                         </div>
                         
                         ${a.notes ? `
                         <div id="notes-${a.id}" class="hidden mt-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-800 dark:text-gray-100 shadow-inner">
                             <h4 class="font-bold text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Additional Broadcaster Details</h4>
-                            <p class="font-medium leading-relaxed italic">${a.notes}</p>
+                            <p class="font-medium leading-relaxed italic whitespace-pre-wrap">${a.notes}</p>
                         </div>` : ''}
                     </li>`;
             });
@@ -863,6 +865,9 @@
                 const iFestTech = getIndex(headers, ['festival tech']);
                 const iIcfSprint = getIndex(headers, ['icf sprint']);
                 const iIcfTech = getIndex(headers, ['icf tech']);
+                
+                // FIXED: Include lookup for notes/details during import
+                const iNotes = getIndex(headers, ['notes', 'details', 'bio', 'info', 'comment']);
 
                 if (iName === -1) {
                     alert("Could not find a 'Name' column. Please check your CSV format.");
@@ -919,7 +924,7 @@
                         gender: gender,
                         event: finalEvent,
                         raceTypes: finalTypes,
-                        notes: '',
+                        notes: safeVal(cols, iNotes, ''), // Will map notes directly now
                         isPinned: false
                     });
                 }
