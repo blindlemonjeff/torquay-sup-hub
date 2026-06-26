@@ -475,7 +475,7 @@
         }
 
         async function initAthletesData() {
-            const localData = localStorage.getItem('icf_athletes');
+            const localData = localStorage.getItem('icf_athletes_v2');
             let parsedData = localData ? JSON.parse(localData) : [];
             
             if (parsedData.length > 0) {
@@ -806,7 +806,7 @@
         }
 
         function saveAthletesData() {
-            localStorage.setItem('icf_athletes', JSON.stringify(athletes));
+            localStorage.setItem('icf_athletes_v2', JSON.stringify(athletes));
         }
 
         function clearAllAthletes() {
